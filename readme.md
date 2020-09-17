@@ -27,19 +27,19 @@ If you want to change the theme, plugins, refer to [this link](https://github.co
 
 ### cuda, opencv, tensorrt
 It is based on prebuilt arm deb package from NVIDIA SDK Manager. So, you download them using NVIDIA SDK Manager, and copy deb package to each folder. The list of files is as follows.
-1. cuda
+1. in cuda folder
    - cuda-repo-l4t-10-2-local-10.2.89_1.0-1_arm64.deb
    - libcudnn8_8.0.0.180-1+cuda10.2_arm64.deb
    - libcudnn8-dev_8.0.0.180-1+cuda10.2_arm64.deb
    - libcudnn8-doc_8.0.0.180-1+cuda10.2_arm64.deb
 
-2. opencv
+2. in opencv folder
    - OpenCV-4.1.1-2-gd5a58aa75-aarch64-dev.deb
    - OpenCV-4.1.1-2-gd5a58aa75-aarch64-libs.deb
    - OpenCV-4.1.1-2-gd5a58aa75-aarch64-licenses.deb
    - OpenCV-4.1.1-2-gd5a58aa75-aarch64-python.deb
 
-3. tensorrt
+3. in tensorrt folder
    - tensorrt_7.1.3.0-1+cuda10.2_arm64.deb
    - libnvinfer-bin_7.1.3-1+cuda10.2_arm64.deb
    - libnvinfer-dev_7.1.3-1+cuda10.2_arm64.deb
