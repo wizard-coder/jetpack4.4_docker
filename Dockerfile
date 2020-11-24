@@ -2,6 +2,8 @@ FROM nvcr.io/nvidia/l4t-base:r32.4.3
 
 ENV DEBIAN_FRONTEND=noninteractive 
 
+# debs folder
+ARG DEB_FOLDER=debs/
 
 ###################################
 ######## zsh part start ########
@@ -17,7 +19,6 @@ RUN sh -c "$(wget --quiet --no-check-certificate -O- https://github.com/deluan/z
 ######## cuda and related part start ########
 ###################################
 WORKDIR /install/cuda
-ARG CUDA_PREFIX=cuda/
 ARG CUDA_VAR=cuda-repo-10-2-local-10.2.89
 ARG CUDA_DPKG=cuda-repo-l4t-10-2-local-10.2.89
 ARG CUDA_DEB=cuda-repo-l4t-10-2-local-10.2.89_1.0-1_arm64.deb
@@ -26,10 +27,10 @@ ARG CUDNN_DEV_DEB=libcudnn8-dev_8.0.0.180-1+cuda10.2_arm64.deb
 ARG CUDNN_DOC_DEB=libcudnn8-doc_8.0.0.180-1+cuda10.2_arm64.deb
 
 # copy from the SDK
-COPY ${CUDA_PREFIX}${CUDA_DEB} .
-COPY ${CUDA_PREFIX}${CUDNN_DEB} .
-COPY ${CUDA_PREFIX}${CUDNN_DEV_DEB} .
-COPY ${CUDA_PREFIX}${CUDNN_DOC_DEB} .
+COPY ${DEB_FOLDER}${CUDA_DEB} .
+COPY ${DEB_FOLDER}${CUDNN_DEB} .
+COPY ${DEB_FOLDER}${CUDNN_DEV_DEB} .
+COPY ${DEB_FOLDER}${CUDNN_DOC_DEB} .
 
 RUN apt-get update && apt-get install -y gnupg && \
     dpkg -i ${CUDA_DEB} && \
@@ -39,7 +40,30 @@ RUN apt-get update && apt-get install -y gnupg && \
     ${CUDNN_DOC_DEB} && \
     apt-get update && \
     apt-get install -y cuda-toolkit-10-2 \
-    cuda-compiler-10-2 \
+    cuda-compiler-10-2 && \
+    dpkg --remove ${CUDA_DPKG} && \
+    dpkg -P ${CUDA_DPKG} && \
+    echo "/usr/lib/aarch64-linux-gnu/tegra" > /etc/ld.so.conf.d/nvidia-tegra.conf && \
+    ldconfig 
+
+###################################
+######## opencv part start ########
+###################################
+
+# WORKDIR /install/opencv
+ARG OPENCV_DEV=OpenCV-4.1.1-2-gd5a58aa75-aarch64-dev.deb
+ARG OPENCV_LIB=OpenCV-4.1.1-2-gd5a58aa75-aarch64-libs.deb
+ARG OPENCV_LICENSE=OpenCV-4.1.1-2-gd5a58aa75-aarch64-licenses.deb
+ARG OPENCV_PYTHON=OpenCV-4.1.1-2-gd5a58aa75-aarch64-python.deb
+
+COPY ${DEB_FOLDER}${OPENCV_DEV} .
+COPY ${DEB_FOLDER}${OPENCV_LIB} .
+COPY ${DEB_FOLDER}${OPENCV_LICENSE} .
+COPY ${DEB_FOLDER}${OPENCV_PYTHON} .
+
+RUN apt-get update && \
+    apt-get install -y libgtk2.0-dev \
+    libtbb-dev \
     lbzip2 \
     git wget unzip \
     cmake automake build-essential \
@@ -64,31 +88,7 @@ RUN apt-get update && apt-get install -y gnupg && \
     libwebp-dev \
     libtbb2 libtbb-dev \
     libavcodec-dev libavformat-dev \
-    libswscale-dev libv4l-dev && \
-    dpkg --remove ${CUDA_DPKG} && \
-    dpkg -P ${CUDA_DPKG} && \
-    echo "/usr/lib/aarch64-linux-gnu/tegra" > /etc/ld.so.conf.d/nvidia-tegra.conf && \
-    ldconfig 
-
-###################################
-######## opencv part start ########
-###################################
-
-# WORKDIR /install/opencv
-ARG OPENCV_PREFIX=opencv/
-ARG OPENCV_DEV=OpenCV-4.1.1-2-gd5a58aa75-aarch64-dev.deb
-ARG OPENCV_LIB=OpenCV-4.1.1-2-gd5a58aa75-aarch64-libs.deb
-ARG OPENCV_LICENSE=OpenCV-4.1.1-2-gd5a58aa75-aarch64-licenses.deb
-ARG OPENCV_PYTHON=OpenCV-4.1.1-2-gd5a58aa75-aarch64-python.deb
-
-COPY ${OPENCV_PREFIX}${OPENCV_DEV} .
-COPY ${OPENCV_PREFIX}${OPENCV_LIB} .
-COPY ${OPENCV_PREFIX}${OPENCV_LICENSE} .
-COPY ${OPENCV_PREFIX}${OPENCV_PYTHON} .
-
-RUN apt-get update && \
-    apt-get install -y libgtk2.0-dev \
-    libtbb-dev 
+    libswscale-dev libv4l-dev
 
 RUN dpkg -i ${OPENCV_DEV} \
     ${OPENCV_LIB} \
@@ -231,7 +231,6 @@ RUN git clone -b ${TORCHVISION_VERSION} https://github.com/pytorch/vision torchv
 ######## tensorrt part start ########
 ###################################
 WORKDIR /install/tensorrt
-ARG TENSORRT_PREFIX=tensorrt/
 ARG TENSORRT=tensorrt_7.1.3.0-1+cuda10.2_arm64.deb
 ARG LIB_INFER_BIN=libnvinfer-bin_7.1.3-1+cuda10.2_arm64.deb
 ARG LIB_INFER_DEV=libnvinfer-dev_7.1.3-1+cuda10.2_arm64.deb
@@ -247,20 +246,20 @@ ARG LIB_NVPARSER7=libnvparsers7_7.1.3-1+cuda10.2_arm64.deb
 ARG PYTHON_LIB_INFER=python3-libnvinfer_7.1.3-1+cuda10.2_arm64.deb
 ARG PYTHON_LIB_INFER_DEV=python3-libnvinfer-dev_7.1.3-1+cuda10.2_arm64.deb
 
-COPY ${TENSORRT_PREFIX}${LIB_INFER7} .
-COPY ${TENSORRT_PREFIX}${LIB_PLUGIN7} .
-COPY ${TENSORRT_PREFIX}${LIB_PLUGIN_DEV} .
-COPY ${TENSORRT_PREFIX}${LIB_NVPARSER7} .
-COPY ${TENSORRT_PREFIX}${LIB_ONNXPARSER7} .
-COPY ${TENSORRT_PREFIX}${LIB_INFER_BIN} .
-COPY ${TENSORRT_PREFIX}${LIB_INFER_DEV} .
-COPY ${TENSORRT_PREFIX}${LIB_NVPARSER_DEV} .
-COPY ${TENSORRT_PREFIX}${LIB_ONNXPARSER_DEV} .
-COPY ${TENSORRT_PREFIX}${LIB_INFER_SAMPLE} .
-COPY ${TENSORRT_PREFIX}${LIB_INFER_DOC} .
-COPY ${TENSORRT_PREFIX}${TENSORRT} .
-COPY ${TENSORRT_PREFIX}${PYTHON_LIB_INFER} .
-COPY ${TENSORRT_PREFIX}${PYTHON_LIB_INFER_DEV} .
+COPY ${DEB_FOLDER}${LIB_INFER7} .
+COPY ${DEB_FOLDER}${LIB_PLUGIN7} .
+COPY ${DEB_FOLDER}${LIB_PLUGIN_DEV} .
+COPY ${DEB_FOLDER}${LIB_NVPARSER7} .
+COPY ${DEB_FOLDER}${LIB_ONNXPARSER7} .
+COPY ${DEB_FOLDER}${LIB_INFER_BIN} .
+COPY ${DEB_FOLDER}${LIB_INFER_DEV} .
+COPY ${DEB_FOLDER}${LIB_NVPARSER_DEV} .
+COPY ${DEB_FOLDER}${LIB_ONNXPARSER_DEV} .
+COPY ${DEB_FOLDER}${LIB_INFER_SAMPLE} .
+COPY ${DEB_FOLDER}${LIB_INFER_DOC} .
+COPY ${DEB_FOLDER}${TENSORRT} .
+COPY ${DEB_FOLDER}${PYTHON_LIB_INFER} .
+COPY ${DEB_FOLDER}${PYTHON_LIB_INFER_DEV} .
 
 RUN apt-get update && apt-get install -y gnupg && \
     dpkg -i ${LIB_INFER7} \
