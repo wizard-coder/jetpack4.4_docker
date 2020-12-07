@@ -285,6 +285,11 @@ RUN python3 -m pip install --upgrade pip && \
     pip3 freeze > requirements.txt && \
     pip3 install -r requirements.txt --upgrade
 
+#############################################3
+########## utilities
+################################################
+RUN apt-get install -y iputils-ping net-tools
+
 
 #### delete
 WORKDIR /
