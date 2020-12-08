@@ -14,6 +14,7 @@ RUN sh -c "$(wget --quiet --no-check-certificate -O- https://github.com/deluan/z
     -p https://github.com/zsh-users/zsh-autosuggestions \
     -p https://github.com/zsh-users/zsh-syntax-highlighting
 
+SHELL [ "/bin/zsh", "-c" ]
 
 ###################################
 ######## cuda and related part start ########
@@ -139,6 +140,9 @@ RUN apt-get update && \
     rosdep update && \
     rm -rf /var/lib/apt/lists/*
 
+# add to zshrc
+RUN echo "source ${ROS_ROOT}/setup.zsh" >> /root/.zshrc
+
 # cv_bridge for python3 and opencv4
 # install dependancy
 RUN apt-get update && \
@@ -154,13 +158,9 @@ RUN catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 \
     -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m \
     -DPYTHON_LIBRARY=/usr/lib/aarch64-linux-gnu/libpython3.6m.so
 RUN catkin config --install
-RUN . ${ROS_ROOT}/setup.sh && catkin build cv_bridge
-
-
-
+RUN source /root/.zshrc && catkin build cv_bridge
 
 # add to zshrc
-RUN echo 'source ${ROS_ROOT}/setup.zsh' >> /root/.zshrc
 RUN echo 'source /ros_package/cv_bridge_ws/install/setup.zsh --extend' >> /root/.zshrc
 
 
